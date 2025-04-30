@@ -15,8 +15,25 @@ class BarChart extends Panel
        of the Vectors in use in the for loop? Add a check to avoid any errors.
        Design an approach to gracefully handle any errors
        */
+
+		 
 	public void paint(Graphics g)
 	{
+
+			// === SER515 #1 FIX: Defensive checks ===
+			if (data == null || dataLabels == null || dataColors == null) {
+			g.setColor(Color.RED);
+			g.drawString("Error: Data is not initialized.", 20, 100);
+			return;
+		}
+
+		int size = data.size();
+		if (dataLabels.size() != size || dataColors.size() != size) {
+			g.setColor(Color.RED);
+			g.drawString("Error: Data size doesnt match", 20, 100);
+			return;
+	   }
+	   // ========================================
 		setSize(200,250);
 		Image duke = Toolkit.getDefaultToolkit().getImage("duke2.gif");
 		g.drawImage(duke, 80, 10, this);
