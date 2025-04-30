@@ -57,8 +57,7 @@ class BarChartFrame extends Frame
 		}
 	}
 
-	public void initData(String fname)
-	{
+	public void initData(String fname) {
 		data = new Vector<Integer>();
 		labels = new Vector<String>();
 		colors = new Vector<Color>();
@@ -69,27 +68,47 @@ class BarChartFrame extends Frame
 		colorMap.put("magenta", Color.magenta);
 		colorMap.put("gray", Color.gray);
 
-		// SER515 #3: There are multiple problems here, ranging from input data validation
-		// to data in the file matching what is in the color map to how exceptions are
-		// handled. Improve the code to handle these 3 problems.
-		try {
-			FileReader bridge = new FileReader(fname);
-			StreamTokenizer	tokens = new StreamTokenizer(bridge);
+		try (FileReader bridge = new FileReader(fname)) {
+				StreamTokenizer streamTokens = new StreamTokenizer(bridge);
+				streamTokens.eolIsSignificant(false);
 
-			while (tokens.nextToken() != StreamTokenizer.TT_EOF) {
-				int number = (int) tokens.nval;
-				tokens.nextToken();
-				String label = tokens.sval;
-				tokens.nextToken();
-				Color color = (Color) colorMap.get(tokens.sval);
+				while (streamTokens.nextToken() != StreamTokenizer.TT_EOF) {
+						try {
+								if (streamTokens.ttype != StreamTokenizer.TT_NUMBER) {
+										throw new IllegalArgumentException("Numeric value is expected");
+								}
+								int number = (int) streamTokens.nval;
 
-				data.addElement(new Integer(number));
-				labels.addElement(label);
-				colors.addElement(color);
-			}
+								if (streamTokens.nextToken() != StreamTokenizer.TT_WORD || streamTokens.sval == null) {
+										throw new IllegalArgumentException("Label is expected after a number");
+								}
+								String label = streamTokens.sval;
+
+								if (streamTokens.nextToken() != StreamTokenizer.TT_WORD || streamTokens.sval == null) {
+										throw new IllegalArgumentException("Color is expected after a label");
+								}
+								String colorName = streamTokens.sval.toLowerCase();
+								Color color = colorMap.get(colorName);
+
+								if (color == null) {
+										System.err.println("Warning: Unknown color '" + colorName + "'. Changing to deafualt color blue ");
+										color = Color.blue; // Default when color not found
+								}
+
+								data.addElement(number);
+								labels.addElement(label);
+								colors.addElement(color);
+						} catch (IllegalArgumentException ex) {
+								System.err.println("Skipping invalid entry: " + ex.getMessage());
+						}
+				}
+		} catch (FileNotFoundException ex) {
+				System.err.println("File not found: " + ex.getMessage());
+		} catch (IOException ex) {
+				System.err.println("Error reading file: " + ex.getMessage());
 		}
-		catch (Exception e) {e.printStackTrace();}
-	}
+}
+
 
 	public BarChartFrame(String fname) {
 		BarChartFrameControl control = new BarChartFrameControl();
