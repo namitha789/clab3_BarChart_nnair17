@@ -29,7 +29,20 @@ class BarChartFrame extends Frame
 			{
 				labels.addElement(labelSelect.getText());
 				data.addElement(new Integer(dataSelect.getText()));
-				colors.addElement(colorMap.get(colorSelect.getSelectedItem()));
+				
+				// Get the selected color from colorSelect
+				String selectedColor = colorSelect.getSelectedItem();
+				Color color = colorMap.get(selectedColor);
+
+				// Check if color exists in the colorMap
+					if (color == null) {
+						// Handle the case where color is not in the colorMap
+						System.out.println("Warning: Selected color not available. Using default color (black).");
+						color = Color.BLACK; // Use default color if not found
+					}
+
+				colors.addElement(color);
+
 
 				chart.setData(data);
 				chart.setColors(colors);
